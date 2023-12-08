@@ -78,9 +78,12 @@ const learnerSubmissions = [
 
 function getLearnerData(course, ag, submissions) {
   let result = [];
+  let learnerObj = {}
 
   // Check that courseid matches from course & ag
   if (course.courseId === ag.courseId) {
+    
+    // Divide submissions by learnerId
     // Followed documentation for object.values() found here: https://www.geeksforgeeks.org/how-to-group-objects-in-an-array-based-on-a-common-property-into-an-array-of-arrays-in-javascript/
     const groupByLearnerId = Object.values(
       submissions.reduce((group, current) => {
@@ -91,42 +94,43 @@ function getLearnerData(course, ag, submissions) {
     );
 
       // Add learnerId and avg to result
-      for (let i = 0; i < groupByLearnerId.length; i++) {
-        let learner = {};
-        learner.id = groupByLearnerId[i].learnerId;
-        result.push({ id: groupByLearnerId[i][0].learnerId, avg: 0 });
-      }
+      // for (let i = 0; i < groupByLearnerId.length; i++) {
+      //   let learner = {};
+      //   learner.id = groupByLearnerId[i].learnerId;
+      //   result.push({id: groupByLearnerId[i][0].learnerId, avg: 0 });
+      // }
   // calculate grade of each assignment
-  let grade = [];
+  let grade = {};
+
+  // for each item in array groupbyLearnerId
   for (const i in groupByLearnerId) {
-    // console.log(groupByLearnerId[i])
+    // Create the learner id for learnerObj
+    learnerObj.id = groupByLearnerId[i][0].learnerId
+    // for each object in array[i]
     for (const j in groupByLearnerId[i]) {
-      // grade.push({assignmentId: groupByLearnerId[i][j].assignmentId})
-      // console.log({assignmentId: groupByLearnerId[i][j].assignmentId})
+      // for each object in assignment group.assignments
       for (const k in ag.assignments) {
-        // console.log(ag.assignments[k]);
-        // function isAssignmentIdEqual(object1, object2) {
-        //   if(object1.assignmentId === object2.id)
-        // console.log(`${object1} === ${object2}???`)
-        // return true
-        // }
+        // Do the assignment Id's match?
         if (groupByLearnerId[i][j].assignmentId == ag.assignments[k].id) {
-          grade.push({
-            assignment:
-              groupByLearnerId[i][j].submission.score /
-              ag.assignments[k].pointsPossible,
-          });
+          // if yes,add it to grade
+          grade[groupByLearnerId[i][j].assignmentId] = groupByLearnerId[i][j].submission.score / ag.assignments[k].pointsPossible
+          Object.assign(learnerObj, grade)
         } else {
+          result.push(learnerObj)
+
           continue;
         }
       }
     }
-    result.push(grade);
+    // for(const obj in result){
+    //   obj.push(grade);
+    // }
 
-      console.log(result);
+      // console.log(grade);
       // }else{
       // throw err "Error- Course ID's do not match"
       // }
+      console.log(result)
     }
   }
 }
