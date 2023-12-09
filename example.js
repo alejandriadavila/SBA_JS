@@ -93,18 +93,12 @@ function getLearnerData(course, ag, submissions) {
       }, {})
     );
 
-      // Add learnerId and avg to result
-      // for (let i = 0; i < groupByLearnerId.length; i++) {
-      //   let learner = {};
-      //   learner.id = groupByLearnerId[i].learnerId;
-      //   result.push({id: groupByLearnerId[i][0].learnerId, avg: 0 });
-      // }
   // calculate grade of each assignment
-  let grade = {};
 
   // for each item in array groupbyLearnerId
   for (const i in groupByLearnerId) {
     // Create the learner id for learnerObj
+    learnerObj = {}
     learnerObj.id = groupByLearnerId[i][0].learnerId
     // for each object in array[i]
     for (const j in groupByLearnerId[i]) {
@@ -113,25 +107,15 @@ function getLearnerData(course, ag, submissions) {
         // Do the assignment Id's match?
         if (groupByLearnerId[i][j].assignmentId == ag.assignments[k].id) {
           // if yes,add it to grade
-          grade[groupByLearnerId[i][j].assignmentId] = groupByLearnerId[i][j].submission.score / ag.assignments[k].pointsPossible
-          Object.assign(learnerObj, grade)
+          learnerObj[groupByLearnerId[i][j].assignmentId] = groupByLearnerId[i][j].submission.score / ag.assignments[k].pointsPossible
         } else {
-          result.push(learnerObj)
-
           continue;
         }
       }
     }
-    // for(const obj in result){
-    //   obj.push(grade);
-    // }
-
-      // console.log(grade);
-      // }else{
-      // throw err "Error- Course ID's do not match"
-      // }
-      console.log(result)
+    result.push(learnerObj)
     }
+    console.log(result)
   }
 }
 getLearnerData(courseInfo, assignmentGroup, learnerSubmissions);
