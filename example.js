@@ -78,11 +78,12 @@ const learnerSubmissions = [
 
 function getLearnerData(course, ag, submissions) {
   let result = [];
-  let learnerObj = {}
+  let learnerObj = {};
+  let totalPossiblePoints = 0
+  let totalPointsEarned = 0
 
   // Check that courseid matches from course & ag
   if (course.courseId === ag.courseId) {
-    
     // Divide submissions by learnerId
     // Followed documentation for object.values() found here: https://www.geeksforgeeks.org/how-to-group-objects-in-an-array-based-on-a-common-property-into-an-array-of-arrays-in-javascript/
     const groupByLearnerId = Object.values(
@@ -92,30 +93,50 @@ function getLearnerData(course, ag, submissions) {
         return group;
       }, {})
     );
-
-  // calculate grade of each assignment
-
-  // for each item in array groupbyLearnerId
-  for (const i in groupByLearnerId) {
-    // Create the learner id for learnerObj
-    learnerObj = {}
-    learnerObj.id = groupByLearnerId[i][0].learnerId
-    // for each object in array[i]
-    for (const j in groupByLearnerId[i]) {
-      // for each object in assignment group.assignments
-      for (const k in ag.assignments) {
-        // Do the assignment Id's match?
-        if (groupByLearnerId[i][j].assignmentId == ag.assignments[k].id) {
-          // if yes,add it to grade
-          learnerObj[groupByLearnerId[i][j].assignmentId] = groupByLearnerId[i][j].submission.score / ag.assignments[k].pointsPossible
-        } else {
-          continue;
+  
+    // Change the date formatting to match the formatting of the provided information
+    const YMDdate = (function convertformat(){
+      let DMYdate = new Date()
+      let YMDdate = DMYdate.getFullYear() + "-" + (DMYdate.getMonth() + 1) + "-" + DMYdate.getDate() + " ";
+      return YMDdate;
+    })()
+    // calculate grade of each assignment
+    // for each item in array groupbyLearnerId
+    for (const i in groupByLearnerId) {
+      // Create the learner id for learnerObj
+      learnerObj = {};
+      learnerObj.id = groupByLearnerId[i][0].learnerId;
+      // for each object in array[i]
+      for (const j in groupByLearnerId[i]) {
+        // for each object in assignment group.assignments
+        for (const k in ag.assignments) {
+          // Has the due date passed?
+          if (ag.assignments[k].dueAt < YMDdate) {
+            // Do the assignment Id's match?
+            if (groupByLearnerId[i][j].assignmentId == ag.assignments[k].id) {
+              // if yes,add it to grade
+              learnerObj[groupByLearnerId[i][j].assignmentId] =
+                groupByLearnerId[i][j].submission.score /
+                ag.assignments[k].pointsPossible;
+                if(ag.assignments[k].dueAt < groupByLearnerId[i][j].submission.submittedAt){
+                  learnerObj[groupByLearnerId[i][j].assignmentId] =
+                  (groupByLearnerId[i][j].submission.score / ag.assignments[k].pointsPossible) -  .1
+                }
+              //Calculate the average score
+              totalPossiblePoints = totalPossiblePoints + ag.assignments[k].pointsPossible
+              totalPointsEarned = totalPointsEarned + (learnerObj[groupByLearnerId[i][j].assignmentId] * 100)
+            } else {
+              continue;
+            }
+          }else{
+            continue
+          }
         }
       }
+      learnerObj.avg = totalPointsEarned/totalPossiblePoints
+      result.push(learnerObj);
     }
-    result.push(learnerObj)
-    }
-    console.log(result)
+    console.log(result);
   }
 }
 getLearnerData(courseInfo, assignmentGroup, learnerSubmissions);
